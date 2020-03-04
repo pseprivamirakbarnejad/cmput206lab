@@ -40,8 +40,8 @@ def display_edges(image, g, threshold):
       try:
         n1, n2 = edge
  
-        r1, c1 = map(int, rag.nodes[n1]['centroid'])
-        r2, c2 = map(int, rag.nodes[n2]['centroid'])
+        r1, c1 = rag.nodes[n1]['centroid'] #map(int, rag.nodes[n1]['centroid'])
+        r2, c2 = rag.nodes[n2]['centroid'] #map(int, rag.nodes[n2]['centroid'])
  
         line  = draw.line(r1, c1, r2, c2)
         circle = draw.circle(r1,c1,2)
