@@ -43,7 +43,7 @@ def display_edges(image, g, threshold):
         r1, c1 = rag.nodes[n1]['centroid'] #map(int, rag.nodes[n1]['centroid'])
         r2, c2 = rag.nodes[n2]['centroid'] #map(int, rag.nodes[n2]['centroid'])
  
-        line  = draw.line(r1, c1, r2, c2)
+        line  = plt.plot([r1,r2],[c1,c2])#draw.line(r1, c1, r2, c2)
         circle = draw.circle(r1,c1,2)
  
         if g[n1][n2]['weight'] < threshold :
