@@ -10,7 +10,7 @@ import subprocess
 
 import torch
 import torch.nn as nn
-from torch.utils.data.sampler import SubsetRandomSampler, SequentialSampler
+from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import Dataset
 
 from A10_modules import Classifier
@@ -221,6 +221,8 @@ def main():
         os.makedirs(weights_dir)
 
     tb_path = os.path.join(weights_dir, 'tb')
+    if not os.path.isdir(tb_path):
+        os.makedirs(tb_path)
     writer = SummaryWriter(logdir=tb_path)
     print(f'Saving tensorboard summary to: {tb_path}')
     # subprocess.Popen("tensorboard --logdir={}".format(tb_path))
