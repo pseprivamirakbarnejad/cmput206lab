@@ -223,7 +223,8 @@ def main():
     tb_path = os.path.join(weights_dir, 'tb')
     writer = SummaryWriter(logdir=tb_path)
     print(f'Saving tensorboard summary to: {tb_path}')
-    subprocess.Popen("tensorboard --logdir={}".format(tb_path))
+    # subprocess.Popen("tensorboard --logdir={}".format(tb_path))
+    os.system("tensorboard --logdir={}".format(tb_path))
 
     start_epoch = 0
     max_valid_acc_epoch = 0
