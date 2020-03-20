@@ -17,11 +17,13 @@ from A10_modules import Classifier
 from A10_modules import TrainParams
 
 from tensorboardX import SummaryWriter
-no_tbc = 0
-try:
-    from tensorboardcolab import TensorBoardColab, TensorBoardColabCallback
-except:
-    no_tbc = 1
+no_tbc = 1
+# try:
+#     from tensorboardcolab import TensorBoardColab, TensorBoardColabCallback
+# except:
+#     no_tbc = 1
+# else:
+#     no_tbc = 0
 
 
 class A10_Params:
