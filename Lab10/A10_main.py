@@ -6,6 +6,7 @@ import time
 import numpy as np
 from tqdm import tqdm
 from datetime import datetime
+import subprocess
 
 import torch
 import torch.nn as nn
@@ -76,8 +77,6 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
 
     n_batches = 0
     _pause = 1
-
-    enc_out_size = None
 
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(data_loader):
@@ -224,6 +223,7 @@ def main():
     tb_path = os.path.join(weights_dir, 'tb')
     writer = SummaryWriter(logdir=tb_path)
     print(f'Saving tensorboard summary to: {tb_path}')
+    subprocess.Popen("tensorboard --logdir={}".format(tb_path))
 
     start_epoch = 0
     max_valid_acc_epoch = 0
