@@ -13,17 +13,9 @@ import torch.nn as nn
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import Dataset
 
-from A10_modules import Classifier
-from A10_modules import TrainParams
+from A10_submission import Classifier, TrainParams
 
 from tensorboardX import SummaryWriter
-no_tbc = 1
-# try:
-#     from tensorboardcolab import TensorBoardColab, TensorBoardColabCallback
-# except:
-#     no_tbc = 1
-# else:
-#     no_tbc = 0
 
 
 class A10_Params:
@@ -233,9 +225,6 @@ def main():
     writer = SummaryWriter(logdir=tb_path)
 
 
-    if not no_tbc:
-        tbc = TensorBoardColab()
-
     print(f'Saving tensorboard summary to: {tb_path}')
     # subprocess.Popen("tensorboard --logdir={}".format(tb_path))
     # os.system("tensorboard --logdir={}".format(tb_path))
@@ -327,19 +316,12 @@ def main():
             train_acc = 100. * train_correct / train_total
 
 
-
-
-
-            if no_tbc:
-                # writer.add_scalars('training', {
-                #     'train_loss': mean_train_loss,
-                #     'train_acc': train_acc,
-                # }, epoch)
-                writer.add_scalar('train_loss', train_loss, epoch)
-                writer.add_scalar('train_acc', train_acc, epoch)
-            else:
-                tbc.save_value("train", "train_loss", epoch, train_loss)
-                tbc.save_value("train", "train_acc", epoch, train_acc)
+            # writer.add_scalars('training', {
+            #     'train_loss': mean_train_loss,
+            #     'train_acc': train_acc,
+            # }, epoch)
+            writer.add_scalar('train_loss', train_loss, epoch)
+            writer.add_scalar('train_acc', train_acc, epoch)
 
             if epoch % train_params.valid_gap == 0:
 
@@ -366,16 +348,13 @@ def main():
                     min_train_loss = train_loss
                     if train_params.save_criterion == 3:
                         save_weights = 1
-                if no_tbc:
-                    # writer.add_scalars('validation', {
-                    #     'valid_loss': valid_loss,
-                    #     'valid_acc': valid_acc,
-                    # }, epoch)
-                    writer.add_scalar('valid_loss', valid_loss, epoch)
-                    writer.add_scalar('valid_acc', valid_acc, epoch)
-                else:
-                    tbc.save_value("validation", "valid_loss", epoch, valid_loss)
-                    tbc.save_value("validation", "valid_acc", epoch, valid_acc)
+
+                # writer.add_scalars('validation', {
+                #     'valid_loss': valid_loss,
+                #     'valid_acc': valid_acc,
+                # }, epoch)
+                writer.add_scalar('valid_loss', valid_loss, epoch)
+                writer.add_scalar('valid_acc', valid_acc, epoch)
 
                 print(
                     'Epoch: %d Train-Loss: %.6f  | Train-Acc: %.3f%% | '
