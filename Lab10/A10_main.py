@@ -6,26 +6,18 @@ import time
 import numpy as np
 from tqdm import tqdm
 from datetime import datetime
-import subprocess
 
 import torch
 import torch.nn as nn
 from torch.utils.data.sampler import SubsetRandomSampler
 from torch.utils.data import Dataset
 
-from A10_submission import Classifier, TrainParams
-
 from tensorboardX import SummaryWriter
+
+from A10_submission_soln import Classifier, TrainParams
 
 
 class A10_Params:
-    """
-
-    :ivar enable_test:
-        0: MNIST
-        1: FMNIST
-    """
-
     def __init__(self):
         self.use_cuda = 1
         self.enable_test = 0
@@ -33,18 +25,7 @@ class A10_Params:
 
 
 class FontsDataset(Dataset):
-    """
-    :param Dataset _dataset:
-    """
-
     def __init__(self, fname='train_data.npz'):
-        """
-
-        :param Dataset dataset:
-        :param all_idx:
-        :param float labeled_percent:
-        """
-
         train_data = np.load(fname, allow_pickle=True)
         self._train_images, self._train_labels = train_data['images'], train_data[
             'labels']  # type: np.ndarray, np.ndarray
@@ -78,6 +59,7 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
     # set CNN to evaluation mode
     classifier.eval()
 
+    # disable gradients computation
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(data_loader):
             inputs = inputs.to(device)
@@ -93,7 +75,10 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
 
             _, predicted = outputs.max(1)
             total += targets.size(0)
-            correct += predicted.eq(targets).sum().item()
+
+            is_correct = predicted.eq(targets)
+
+            correct += is_correct.sum().item()
 
             n_batches += 1
 
@@ -102,24 +87,33 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
                 comcat_imgs = []
                 for i in range(data_loader.batch_size):
                     input_img = inputs_np[i, ...].squeeze()
+
+                    # grayscale to RGB
+                    input_img = np.stack([input_img, ] * 3, axis=2)
+
                     target = targets[i]
                     output = predicted[i]
+                    _is_correct = is_correct[i].item()
+                    if _is_correct:
+                        col = (0, 255, 0)
+                    else:
+                        col = (0, 0, 255)
 
                     output_img = np.zeros_like(input_img)
                     _text = '{}'.format(chr(65 + int(output)))
                     cv2.putText(output_img, _text, (8, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL,
-                                1, 255, 1, cv2.LINE_AA)
+                                1, col, 1, cv2.LINE_AA)
 
                     target_img = np.zeros_like(input_img)
                     _text = '{}'.format(chr(65 + int(target)))
                     cv2.putText(target_img, _text, (8, 20), cv2.FONT_HERSHEY_COMPLEX_SMALL,
-                                1, 255, 1, cv2.LINE_AA)
+                                1, (255, 255, 255), 1, cv2.LINE_AA)
 
                     comcat_img = np.concatenate((input_img, target_img, output_img), axis=0)
                     comcat_imgs.append(comcat_img)
 
                 comcat_imgs = np.concatenate(comcat_imgs, axis=1)
-                cv2.imshow('comcat_imgs', comcat_imgs)
+                cv2.imshow('Press Esc to exit, Space to resume, any other key for next batch', comcat_imgs)
                 k = cv2.waitKey(1 - _pause)
                 if k == 27:
                     sys.exit(0)
@@ -310,6 +304,7 @@ def main():
 
             train_acc = 100. * train_correct / train_total
 
+            # write training data for tensorboard
             writer.add_scalar('train_loss', train_loss, epoch)
             writer.add_scalar('train_acc', train_acc, epoch)
 
