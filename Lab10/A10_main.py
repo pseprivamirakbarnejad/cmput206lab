@@ -366,20 +366,20 @@ def main():
                 print('Saving weights to {}'.format(weights_path))
                 torch.save(model_dict, weights_path)
 
-        if params.enable_test:
-            test_set = FontsDataset('test_data.npz')
-            test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=24, num_workers=4)
-        else:
-            test_dataloader = valid_dataloader
+    if params.enable_test:
+        test_set = FontsDataset('test_data.npz')
+        test_dataloader = torch.utils.data.DataLoader(test_set, batch_size=24, num_workers=4)
+    else:
+        test_dataloader = valid_dataloader
 
-        start_t = time.time()
-        _, test_acc = evaluate(
-            classifier, test_dataloader, criterion, train_params.vis, device)
-        end_t = time.time()
-        test_time = end_t - start_t
+    start_t = time.time()
+    _, test_acc = evaluate(
+        classifier, test_dataloader, criterion, train_params.vis, device)
+    end_t = time.time()
+    test_time = end_t - start_t
 
-        print('test_acc: {:.4f}'.format(test_acc))
-        print('test_time: {:.4f}'.format(test_time))
+    print('test_acc: {:.4f}'.format(test_acc))
+    print('test_time: {:.4f}'.format(test_time))
 
 
 if __name__ == '__main__':
