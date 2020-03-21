@@ -326,16 +326,17 @@ def main():
 
             train_acc = 100. * train_correct / train_total
 
-            # writer.add_scalar('train_loss', train_loss, epoch)
-            # writer.add_scalar('train_acc', train_acc, epoch)
+
 
 
 
             if no_tbc:
-                writer.add_scalars('training', {
-                    'train_loss': mean_train_loss,
-                    'train_acc': train_acc,
-                }, epoch)
+                # writer.add_scalars('training', {
+                #     'train_loss': mean_train_loss,
+                #     'train_acc': train_acc,
+                # }, epoch)
+                writer.add_scalar('train_loss', train_loss, epoch)
+                writer.add_scalar('train_acc', train_acc, epoch)
             else:
                 tbc.save_value("train", "train_loss", epoch, train_loss)
                 tbc.save_value("train", "train_acc", epoch, train_acc)
@@ -365,15 +366,13 @@ def main():
                     min_train_loss = train_loss
                     if train_params.save_criterion == 3:
                         save_weights = 1
-
-                # writer.add_scalar('valid_loss', valid_loss, epoch)
-                # writer.add_scalar('valid_acc', valid_acc, epoch)
-
                 if no_tbc:
-                    writer.add_scalars('validation', {
-                        'valid_loss': valid_loss,
-                        'valid_acc': valid_acc,
-                    }, epoch)
+                    # writer.add_scalars('validation', {
+                    #     'valid_loss': valid_loss,
+                    #     'valid_acc': valid_acc,
+                    # }, epoch)
+                    writer.add_scalar('valid_loss', valid_loss, epoch)
+                    writer.add_scalar('valid_acc', valid_acc, epoch)
                 else:
                     tbc.save_value("validation", "valid_loss", epoch, valid_loss)
                     tbc.save_value("validation", "valid_acc", epoch, valid_acc)
