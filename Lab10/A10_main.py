@@ -21,7 +21,7 @@ from tensorboardX import SummaryWriter
 class A10_Params:
     """
 
-    :ivar dataset:
+    :ivar enable_test:
         0: MNIST
         1: FMNIST
     """
@@ -67,8 +67,6 @@ class FontsDataset(Dataset):
 
 
 def evaluate(classifier, data_loader, criterion_cls, vis, device):
-    classifier.eval()
-
     mean_loss_sum = 0
     _psnr_sum = 0
     total = 0
@@ -76,6 +74,9 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
 
     n_batches = 0
     _pause = 1
+
+    # set CNN to evaluation mode
+    classifier.eval()
 
     with torch.no_grad():
         for batch_idx, (inputs, targets) in enumerate(data_loader):
@@ -95,8 +96,6 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
             correct += predicted.eq(targets).sum().item()
 
             n_batches += 1
-
-            # outputs_np = outputs.detach().cpu().numpy()
 
             if vis:
                 inputs_np = inputs.detach().cpu().numpy()
@@ -142,6 +141,7 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
 
 def main():
     params = A10_Params()
+    train_params = params.train
 
     # optional command line argument parsing
     try:
@@ -149,7 +149,7 @@ def main():
     except ImportError:
         pass
     else:
-        paramparse.process(params)
+        paramparse.process(train_params)
 
     # init device
     if params.use_cuda and torch.cuda.is_available():
@@ -158,8 +158,6 @@ def main():
     else:
         device = torch.device("cpu")
         print('Training on CPU')
-
-    train_params = params.train
 
     # load dataset
     train_set = FontsDataset()
@@ -224,10 +222,7 @@ def main():
         os.makedirs(tb_path)
     writer = SummaryWriter(logdir=tb_path)
 
-
     print(f'Saving tensorboard summary to: {tb_path}')
-    # subprocess.Popen("tensorboard --logdir={}".format(tb_path))
-    # os.system("tensorboard --logdir={}".format(tb_path))
 
     start_epoch = 0
     max_valid_acc_epoch = 0
@@ -236,6 +231,7 @@ def main():
     min_valid_loss = np.inf
     min_train_loss = np.inf
     valid_loss = valid_acc = -1
+
     # load weights
     if train_params.load_weights:
         matching_ckpts = [k for k in os.listdir(weights_dir) if
@@ -278,9 +274,9 @@ def main():
             start_epoch = chkpt['epoch'] + 1
 
     if train_params.load_weights != 1:
-        # continue training
+        # start / continue training
         for epoch in range(start_epoch, train_params.n_epochs):
-            # Training
+            # set CNN to training mode
             classifier.train()
 
             train_loss = 0
@@ -297,7 +293,6 @@ def main():
                 optimizer.zero_grad()
 
                 outputs = classifier(inputs)
-                outputs_np = outputs.detach().cpu().numpy()
 
                 loss = criterion(outputs, targets)
 
@@ -315,11 +310,6 @@ def main():
 
             train_acc = 100. * train_correct / train_total
 
-
-            # writer.add_scalars('training', {
-            #     'train_loss': mean_train_loss,
-            #     'train_acc': train_acc,
-            # }, epoch)
             writer.add_scalar('train_loss', train_loss, epoch)
             writer.add_scalar('train_acc', train_acc, epoch)
 
@@ -349,10 +339,7 @@ def main():
                     if train_params.save_criterion == 3:
                         save_weights = 1
 
-                # writer.add_scalars('validation', {
-                #     'valid_loss': valid_loss,
-                #     'valid_acc': valid_acc,
-                # }, epoch)
+                # write validation data for tensorboard
                 writer.add_scalar('valid_loss', valid_loss, epoch)
                 writer.add_scalar('valid_acc', valid_acc, epoch)
 
@@ -385,10 +372,10 @@ def main():
         else:
             test_dataloader = valid_dataloader
 
-        start_t = time.time_ns()
+        start_t = time.time()
         _, test_acc = evaluate(
             classifier, test_dataloader, criterion, train_params.vis, device)
-        end_t = time.time_ns()
+        end_t = time.time()
         test_time = end_t - start_t
 
         print('test_acc: {:.4f}'.format(test_acc))
