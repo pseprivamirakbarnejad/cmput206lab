@@ -14,7 +14,7 @@ from torch.utils.data import Dataset
 
 from tensorboardX import SummaryWriter
 
-from A10_submission_soln import Classifier, TrainParams
+from A10_submission import Classifier, TrainParams
 
 
 class A10_Params:
