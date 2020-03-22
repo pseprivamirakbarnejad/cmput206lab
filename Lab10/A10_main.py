@@ -130,7 +130,7 @@ def evaluate(classifier, data_loader, criterion_cls, vis, device):
     if vis:
         cv2.destroyWindow('comcat_imgs')
 
-    return overall_mean_loss, acc
+    return overall_mean_loss, acc, total
 
 
 def main():
@@ -310,7 +310,7 @@ def main():
 
             if epoch % train_params.valid_gap == 0:
 
-                valid_loss, valid_acc = evaluate(
+                valid_loss, valid_acc, _ = evaluate(
                     classifier, valid_dataloader, criterion, train_params.vis, device)
 
                 if valid_acc > max_valid_acc:
@@ -368,13 +368,15 @@ def main():
         test_dataloader = valid_dataloader
 
     start_t = time.time()
-    _, test_acc = evaluate(
+    _, test_acc, n_test = evaluate(
         classifier, test_dataloader, criterion, train_params.vis, device)
     end_t = time.time()
     test_time = end_t - start_t
+    fps = n_test / test_time
 
-    print('test_acc: {:.4f}'.format(test_acc))
-    print('test_time: {:.4f}'.format(test_time))
+    print('test accuracy: {:.4f}%'.format(test_acc))
+    print('test time: {:.4f} sec. with {:d} images ({:.4f} images / sec)'.format(
+        test_time, n_test, fps))
 
 
 if __name__ == '__main__':
